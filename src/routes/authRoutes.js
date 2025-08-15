@@ -17,39 +17,30 @@ router.post("/register", async (req, res) => {
     }
 
     if (password.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters" });
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
     }
 
     if (username.length < 3) {
-      return res
-        .status(400)
-        .json({ message: "Username must be at least 3 characters" });
+      return res.status(400).json({ message: "Username must be at least 3 characters" });
     }
 
-    //Check user if exists
     const existingEmail = await User.findOne({ email });
-
     if (existingEmail) {
       return res.status(400).json({ message: "Email already exists" });
     }
 
     const existingUsername = await User.findOne({ username });
-
     if (existingUsername) {
       return res.status(400).json({ message: "Username already exists" });
     }
 
-    //get random profile image
     const profileImage = `https://api.dicebear.com/6.x/initials/svg?seed=${username}`;
-
     const user = new User({ username, email, password, profileImage });
     await user.save();
 
     const token = generateToken(user._id);
 
-    res.status(201).json({
+    return res.status(201).json({
       token,
       user: {
         id: user._id,
@@ -61,11 +52,10 @@ router.post("/register", async (req, res) => {
     });
   } catch (error) {
     console.log("Error in register route", error);
-    res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ message: "Server Error" });
   }
-
-  res.send("register Route");
 });
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
